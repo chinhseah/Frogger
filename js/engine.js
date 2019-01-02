@@ -23,10 +23,11 @@ var Engine = (function(global) {
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
+        gameOn = true;
 
     canvas.width = 505;
     canvas.height = 606;
-    doc.body.appendChild(canvas);
+    doc.getElementsByClassName('game-panel')[0].appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -55,7 +56,11 @@ var Engine = (function(global) {
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
-        win.requestAnimationFrame(main);
+        if (gameOn) {
+          win.requestAnimationFrame(main);
+        } else {
+          displayGameOver();
+        }
     }
 
     /* This function does some initial setup that should only occur once,
@@ -64,29 +69,51 @@ var Engine = (function(global) {
      */
     function init() {
         reset();
+        if (player)
+          updatePlayerLivesLeft();
         lastTime = Date.now();
         main();
     }
 
-    /* This function is called by update to check if player has
-     * reached the grass area.
+    /* This function checks whether player has any lives left, if not,
+     * then game is over.
      */
-    function checkPlayerWin() {
-        if (player.y <= 0){
-          return true;
+    function checkGameOver() {
+        if (player.livesLeft == 0){
+          allEnemies = [];
+          player = undefined;
+          gameOn = false;
         }
-        return false;
+    }
+
+    /* This function display messages on canvas to user that game is over and
+     * how to start a new game.
+     */
+    function displayGameOver() {
+        // Text attributes
+        ctx.font = '20pt Arial';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'red';
+
+        ctx.strokeText("For new game, refresh page", canvas.width / 2, 40);
+
+        ctx.font = '30pt Impact';
+        ctx.lineWidth = 3;
+        ctx.fillText("Game Over!", canvas.width / 2, canvas.height / 2);
+        ctx.strokeText("Game Over!", canvas.width / 2, canvas.height / 2);
     }
 
     /* This function is called by update to check if player has
      * has collided with an enemy.
      */
-    function checkCollisions() {
+    function isEnemyCollision() {
         let isCollide = false;
         allEnemies.some(function(enemy) {
           if (enemy.collision(player)){
             isCollide = true;
-            return;
+            return; // skip not processed enemies
           }
         });
         return isCollide;
@@ -102,9 +129,19 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        updateEntities(dt);
-        if (checkPlayerWin() || checkCollisions()){
+        if (player){
+          updateEntities(dt);
+          if (isEnemyCollision()){
             reset();
+            player.lostLife();
+            updatePlayerLivesLeft();
+            checkGameOver();
+          } else {
+            if (player.win()){
+              updatePlayerScore();
+              reset();
+            }
+          }
         }
     }
 
@@ -120,6 +157,32 @@ var Engine = (function(global) {
             enemy.update(dt);
         });
         player.update();
+    }
+
+    /* This function is called after collision to update
+     * how many lives player has left.
+     */
+    function updatePlayerLivesLeft(){
+        let hearts = document.getElementsByClassName('hearts')[0];
+        hearts.innerHTML = "";
+        for(let h=0; h<player.livesLeft; ++h){
+            let listElement = document.createElement("li");
+            let heartElement = document.createElement("img");
+            heartElement.setAttribute('src', 'images/Heart.png');
+            heartElement.setAttribute('alt', 'Heart');
+            heartElement.setAttribute('height', '35');
+            heartElement.setAttribute('width', '35');
+            listElement.appendChild(heartElement);
+            hearts.appendChild(listElement);
+        }
+    }
+
+    /* This function is called to update player score displayed to user.
+     */
+    function updatePlayerScore() {
+      let scoreElement = document.getElementById("score");
+      let scoreMsg = player.score + " Points";
+      scoreElement.textContent = scoreMsg;
     }
 
     /* This function initially draws the "game level", it will then call
@@ -178,8 +241,8 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
-        player.render();
+        if (player)
+          player.render();
     }
 
     /* This function handles game reset states for a new game or a game over.

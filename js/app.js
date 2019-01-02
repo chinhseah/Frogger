@@ -61,9 +61,9 @@ Entity.prototype.reset = function() {
 /**
 * @description Represents a Enemy our player must avoid
 * @constructor
-* @param {string} sprite - URL to entity image file
-* @param {number} xInitial - Initial x position of entity on canvas
-* @param {number} yInitial - Initial y position of entity on canvas
+* @param {string} sprite - URL to enemy image file
+* @param {number} xInitial - Initial x position of enemy on canvas
+* @param {number} yInitial - Initial y position of enemy on canvas
 * @param {number} speed - Enemy moves across canvas
 */
 var Enemy = function(sprite, xInitial, yInitial, speed) {
@@ -87,17 +87,27 @@ Enemy.prototype.update = function(dt) {
 
 Enemy.prototype.constructor = Enemy;
 
-// Now write your own player class
-var Player = function(sprite, xInitial, yInitial){
+/**
+* @description Player that is moved by up, down, left or right arrow keys
+* @constructor
+* @param {string} sprite - URL to player image file
+* @param {number} xInitial - Initial x position of player on canvas
+* @param {number} yInitial - Initial y position of player on canvas
+* @param {number} lives - number of lives player has
+*/
+var Player = function(sprite, xInitial, yInitial, lives){
     Entity.call(this, sprite, xInitial, yInitial);
+    this.livesLeft = lives;
+    this.score = 0;
     this.isMoveX = false;
     this.moveDelta = 0;
 };
 
 Player.prototype = Object.create(Entity.prototype);
 
-// This class requires an update(), render() and
-// a handleInput() method.
+/**
+* @description Update the player's position, required method for game
+*/
 Player.prototype.update = function() {
     // Move player depending on which direction
     if (this.moveDelta != 0) {
@@ -114,20 +124,54 @@ Player.prototype.update = function() {
     this.moveDelta = 0;
 }
 
-Player.prototype.handleInput = function(keyCode){
-    if (keyCode == undefined) {
+/**
+* @description Handle user's key pressed - up, down, left or right arrow keys
+* @param {string} keyPressed is up, down, left or right
+*/
+Player.prototype.handleInput = function(keyPressed){
+    if (keyPressed == undefined) {
       return;
     }
     this.moveDelta = 10;
-    if (keyCode == 'left' || keyCode == 'right'){
+    if (keyPressed == 'left' || keyPressed == 'right'){
       this.isMoveX = true;
-      if (keyCode == 'left')
+      if (keyPressed == 'left')
        this.moveDelta *= -1;
     } else { // 'up' or 'down'
       this.isMoveX = false;
-      if (keyCode == 'up')
+      if (keyPressed == 'up')
        this.moveDelta *= -1;
     }
+}
+
+/**
+* @description Update the player's lives life when player collided with enemy
+*/
+Player.prototype.lostLife = function() {
+    if (this.livesLeft > 0){
+      this.livesLeft--;
+    }
+}
+
+/**
+* @description Check if player has any lives left, if not, then game over
+*/
+Player.prototype.lost = function() {
+    if (this.livesLeft == 0){
+      return true;
+    }
+    return false;
+}
+
+/**
+* @description Update the player's score when player has reached top of canvas
+*/
+Player.prototype.win = function(){
+    if (this.y <= 0){
+      this.score += 10;
+      return true;
+    }
+    return false;
 }
 
 Player.prototype.constructor = Player;
@@ -135,13 +179,14 @@ Player.prototype.constructor = Player;
 // Now instantiate your objects.
 
 // Place all enemy objects in an array called allEnemies
-// Remember that 1st row is water 'blocks' so offset to 2nd, 3rd &  4th row
-// of stone 'blocks'. Each 'block' is 101 x 83
+// 1st row is water 'blocks' so offset to 2nd, 3rd & 4th row of stone 'blocks'.
+// Each 'block' is 101 x 83
 var allEnemies = [new Enemy('images/enemy-bug.png', 0, 60, 20),
                   new Enemy('images/enemy-bug.png', 0, 143, 40),
                   new Enemy('images/enemy-bug.png', 0, 226, 30)];
 // Place the player object in a variable called player
-var player = new Player('images/char-boy.png', 200, 350);
+// Position player within grass 'blocks'
+var player = new Player('images/char-boy.png', 200, 400, 3);
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -152,6 +197,6 @@ document.addEventListener('keyup', function(e) {
         39: 'right',
         40: 'down'
     };
-
-    player.handleInput(allowedKeys[e.keyCode]);
+    if (player)
+      player.handleInput(allowedKeys[e.keyCode]);
 });
