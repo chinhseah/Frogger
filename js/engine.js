@@ -65,26 +65,22 @@ var Engine = (function(global) {
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
-     * game loop.
+     * game loop. Maximum width and height entities can move to.
      */
     function init() {
         reset();
-        if (player)
-          updatePlayerLivesLeft();
+        if (player) {
+          player.xMax = canvas.width;
+          player.yMax = canvas.height - 100;
+          updateHeartsDisplayed(player.livesLeft());
+        }
+        allEnemies.forEach(function(enemy) {
+            enemy.xMax = canvas.width;
+            enemy.yMax = canvas.height;
+        });
         lastTime = Date.now();
         main();
         displayUserAvatars();
-    }
-
-    /* This function checks whether player has any lives left, if not,
-     * then game is over.
-     */
-    function checkGameOver() {
-        if (player.livesLeft == 0){
-          allEnemies = [];
-          player = undefined;
-          gameOn = false;
-        }
     }
 
     /* This function display messages on canvas to user that game is over and
@@ -134,6 +130,7 @@ var Engine = (function(global) {
         let isCollide = false;
         allEnemies.some(function(enemy) {
           if (enemy.collision(player)){
+            player.kill();
             isCollide = true;
             return; // skip not processed enemies
           }
@@ -155,9 +152,12 @@ var Engine = (function(global) {
           updateEntities(dt);
           if (isEnemyCollision()){
             reset();
-            player.lostLife();
-            updatePlayerLivesLeft();
-            checkGameOver();
+            updateHeartsDisplayed(player.livesLeft());
+            if (!player.alive()){
+              allEnemies = [];
+              player = undefined;
+              gameOn = false;
+            }
           } else {
             if (player.win()){
               updatePlayerScore();
@@ -184,10 +184,10 @@ var Engine = (function(global) {
     /* This function is called after collision to update
      * how many lives player has left.
      */
-    function updatePlayerLivesLeft(){
+    function updateHeartsDisplayed(heartsTotal){
         let hearts = document.getElementsByClassName('hearts')[0];
         hearts.innerHTML = "";
-        for(let h=0; h<player.livesLeft; ++h){
+        for(let h=0; h<heartsTotal; ++h){
             let listElement = document.createElement("li");
             let heartElement = document.createElement("img");
             heartElement.setAttribute('src', 'images/Heart.png');

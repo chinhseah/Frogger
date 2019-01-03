@@ -1,9 +1,5 @@
 "use strict";
 
-// Canvas width and height
-const canvasWidth = 505;
-const canvasHeight = 606;
-
 /**
 * @description Represents a game entity which can be players, enemies, etc.
 * @constructor
@@ -23,6 +19,8 @@ var Entity = function(sprite, xInitial, yInitial) {
     this.yInitial = yInitial;
     this.x = xInitial;
     this.y = yInitial;
+    this.xMax = 100; // move within max x position
+    this.yMax = 100; // move within max y position
 };
 
 /**
@@ -43,10 +41,10 @@ Entity.prototype.collision = function(other) {
 * @description Draw the entity on the screen, required method for game.
 */
 Entity.prototype.render = function() {
-    if (this.x > canvasWidth) {
+    if (this.x > this.xMax) {
       this.x = 0;
     }
-    if (this.y > canvasHeight){
+    if (this.y > this.yMax){
       this.y = 0;
     }
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
@@ -95,14 +93,47 @@ Enemy.prototype.constructor = Enemy;
 * @param {string} sprite - URL to player image file
 * @param {number} xInitial - Initial x position of player on canvas
 * @param {number} yInitial - Initial y position of player on canvas
-* @param {number} lives - number of lives player has
 */
-var Player = function(sprite, xInitial, yInitial, lives){
+var Player = function(sprite, xInitial, yInitial){
     Entity.call(this, sprite, xInitial, yInitial);
-    this.livesLeft = lives;
     this.score = 0;
     this.isMoveX = false;
     this.moveDelta = 0;
+    // private attributes
+    var that = this; // used to make the object available to the private methods
+    var lives = 3;
+    // private methods
+    /**
+    * @description Update the player's lives left when player collided with enemy
+    */
+    function lostLife() {
+        if (lives > 0) {
+            lives -= 1;
+            return true;
+        }
+        return false;
+    };
+    // public accessible methods
+    /**
+    * @description Check if player has any lives left, if not, then game over
+    */
+    this.alive = function() {
+        return lives > 0 ? true : false;
+    };
+
+    /**
+    * @description Get how many lives left in player
+    */
+    this.livesLeft = function() {
+        return lives;
+    };
+
+    /**
+    * @description Lose a life when player is killed by enemy
+    */
+    this.kill = function() {
+        return lostLife();
+    };
 };
 
 Player.prototype = Object.create(Entity.prototype);
@@ -115,11 +146,11 @@ Player.prototype.update = function() {
     if (this.moveDelta != 0) {
       if (this.isMoveX){
         let xNew = this.x + this.moveDelta;
-        if (xNew >= 0 && xNew <= canvasWidth - this.width)
+        if (xNew >= 0 && xNew <= this.xMax - this.width)
           this.x = xNew;
       } else {
         let yNew = this.y + this.moveDelta;
-        if (yNew >= 0 && yNew <= canvasHeight - (this.height*2))
+        if (yNew >= 0 && yNew <= this.yMax - this.height)
           this.y = yNew;
       }
     }
@@ -147,25 +178,6 @@ Player.prototype.handleInput = function(keyPressed){
 }
 
 /**
-* @description Update the player's lives life when player collided with enemy
-*/
-Player.prototype.lostLife = function() {
-    if (this.livesLeft > 0){
-      this.livesLeft--;
-    }
-}
-
-/**
-* @description Check if player has any lives left, if not, then game over
-*/
-Player.prototype.lost = function() {
-    if (this.livesLeft == 0){
-      return true;
-    }
-    return false;
-}
-
-/**
 * @description Update the player's score when player has reached top of canvas
 */
 Player.prototype.win = function(){
@@ -179,7 +191,6 @@ Player.prototype.win = function(){
 Player.prototype.constructor = Player;
 
 // Now instantiate your objects.
-
 // Place all enemy objects in an array called allEnemies
 // 1st row is water 'blocks' so offset to 2nd, 3rd & 4th row of stone 'blocks'.
 // Each 'block' is 101 x 83
@@ -188,7 +199,7 @@ var allEnemies = [new Enemy('images/enemy-bug.png', 0, 60, 20),
                   new Enemy('images/enemy-bug.png', 0, 226, 30)];
 // Place the player object in a variable called player
 // Position player within grass 'blocks'
-var player = new Player('images/char-boy.png', 200, 400, 3);
+var player = new Player('images/char-boy.png', 200, 400);
 
 // Avatar icons that user can choose to represent user
 const avatars = {
