@@ -73,6 +73,7 @@ var Engine = (function(global) {
           updatePlayerLivesLeft();
         lastTime = Date.now();
         main();
+        displayUserAvatars();
     }
 
     /* This function checks whether player has any lives left, if not,
@@ -103,6 +104,27 @@ var Engine = (function(global) {
         ctx.lineWidth = 3;
         ctx.fillText("Game Over!", canvas.width / 2, canvas.height / 2);
         ctx.strokeText("Game Over!", canvas.width / 2, canvas.height / 2);
+    }
+
+    /* This function displays avatar icons that user can pick from to represent
+     * player in the game.
+     */
+    function displayUserAvatars() {
+        let avatarsElement = doc.getElementsByClassName('avatars')[0];
+        for(var key in avatars) {
+          let value = avatars[key];
+          let listElement = document.createElement("li");
+          listElement.classList.add("avatar");
+          let avatarElement = document.createElement("img");
+          avatarElement.setAttribute('src', value);
+          listElement.textContent = key;
+          avatarElement.setAttribute('alt', key);
+          avatarElement.setAttribute('height', '50');
+          avatarElement.setAttribute('width', '50');
+          listElement.appendChild(avatarElement);
+          avatarsElement.appendChild(listElement);
+        };
+        document.getElementsByClassName("user-panel")[0].style.display = "block";
     }
 
     /* This function is called by update to check if player has
@@ -170,8 +192,8 @@ var Engine = (function(global) {
             let heartElement = document.createElement("img");
             heartElement.setAttribute('src', 'images/Heart.png');
             heartElement.setAttribute('alt', 'Heart');
-            heartElement.setAttribute('height', '35');
-            heartElement.setAttribute('width', '35');
+            heartElement.setAttribute('height', '40');
+            heartElement.setAttribute('width', '40');
             listElement.appendChild(heartElement);
             hearts.appendChild(listElement);
         }
@@ -263,7 +285,11 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png'
     ]);
     Resources.onReady(init);
 

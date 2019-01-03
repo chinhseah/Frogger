@@ -55,3 +55,53 @@ h1 {
 .score-panel #score {
     float: right;
 }
+
+/*
+ * Styles for the User Panel
+ */
+.user-panel {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    top: 0;
+    width: 500px;
+    height: auto;
+    overflow: auto; /* Enable scroll if needed */
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #000000; /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.user-panel-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  text-align:center;
+}
+
+.avatars .avatar {
+    background: #fefefe;
+    font-size: 20px;
+    color: #0f0ff0;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-panel .close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.user-panel-content .close:hover,
+.user-panel-content .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}

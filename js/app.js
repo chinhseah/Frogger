@@ -1,3 +1,5 @@
+"use strict";
+
 // Canvas width and height
 const canvasWidth = 505;
 const canvasHeight = 606;
@@ -15,8 +17,8 @@ var Entity = function(sprite, xInitial, yInitial) {
     // The image/sprite for our entity, this uses
     // a helper we've provided to easily load images
     this.sprite = sprite;
-    this.width = 100; // based on image
-    this.height = 80; // based on image
+    this.width = 80; // based on image
+    this.height = 60; // based on image
     this.xInitial = xInitial;
     this.yInitial = yInitial;
     this.x = xInitial;
@@ -188,6 +190,15 @@ var allEnemies = [new Enemy('images/enemy-bug.png', 0, 60, 20),
 // Position player within grass 'blocks'
 var player = new Player('images/char-boy.png', 200, 400, 3);
 
+// Avatar icons that user can choose to represent user
+const avatars = {
+  'Boy':'images/char-boy.png',
+  'Cat Girl':'images/char-cat-girl.png',
+  'Horn Girl':'images/char-horn-girl.png',
+  'Pink Girl':'images/char-pink-girl.png',
+  'Princess':'images/char-princess-girl.png'
+};
+
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
@@ -199,4 +210,26 @@ document.addEventListener('keyup', function(e) {
     };
     if (player)
       player.handleInput(allowedKeys[e.keyCode]);
+});
+
+// Event listener for when user clicks on 'X' to close pick user avatar modal
+document.getElementsByClassName("close")[0].addEventListener("click", function(event){
+  let c = event.target;
+  if (!c) return;
+  document.getElementsByClassName("user-panel")[0].style.display = "none";
+});
+
+// Event listener for when user clicks on an avatar icon
+// Set player image to icon selected and close window
+document.getElementsByClassName("avatars")[0].addEventListener("click", function(event){
+  let c = event.target;
+  if (!c) return;
+  let a = c;
+  if (c.classList.length > 0){ // list not image
+    a = c.firstElementChild;
+  }
+  let imageURL = a.getAttribute('src');
+  if (player)
+    player.sprite = imageURL;
+  document.getElementsByClassName("user-panel")[0].style.display = "none";
 });
