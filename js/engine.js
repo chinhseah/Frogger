@@ -87,6 +87,12 @@ var Engine = (function(global) {
      * how to start a new game.
      */
     function displayGameOver() {
+        allEnemies = [];
+        allGemstones = [];
+        allStars = [];
+        player = undefined;
+        // repaint
+        render();
         // Text attributes
         ctx.font = '20pt Arial';
         ctx.textAlign = 'center';
@@ -131,11 +137,33 @@ var Engine = (function(global) {
         allEnemies.some(function(enemy) {
           if (enemy.collision(player)){
             player.kill();
+            if (player.score >= 100){
+              player.score -= 100;
+              updatePlayerScore();
+            }
             isCollide = true;
             return; // skip not processed enemies
           }
         });
         return isCollide;
+    }
+
+    /* This function is called by update to check if player has
+     * has collected a gemstone.
+     */
+    function collectGemstone() {
+      let idx=0;
+      while (idx < allGemstones.length) {
+        if (allGemstones[idx].collision(player)){
+          let gemstone = allGemstones[idx];
+          allGemstones.splice(idx,1); // remove from gemstones
+          // convert gemstone to a star
+          allStars.push(new Star('images/Star.png', gemstone.x, gemstone.y));
+          return gemstone.points;
+        }
+        idx++; // next gemstone
+      }
+      return 0;
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -154,15 +182,20 @@ var Engine = (function(global) {
             reset();
             updateHeartsDisplayed(player.livesLeft());
             if (!player.alive()){
-              allEnemies = [];
-              player = undefined;
               gameOn = false;
             }
-          } else {
-            if (player.win()){
+          } else if (player.win()){
               updatePlayerScore();
               reset();
-            }
+              if (allGemstones.length == 0){ // done!
+                gameOn = false;
+              }
+          } else if (allGemstones.length > 0){
+              let gemstonePoint = collectGemstone();
+              if (gemstonePoint > 0){
+                player.score += gemstonePoint;
+                updatePlayerScore();
+              }
           }
         }
     }
@@ -263,6 +296,12 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
+        allGemstones.forEach(function(gem) {
+            gem.render();
+        });
+        allStars.forEach(function(star) {
+            star.render();
+        });
         if (player)
           player.render();
     }
@@ -289,7 +328,11 @@ var Engine = (function(global) {
         'images/char-cat-girl.png',
         'images/char-horn-girl.png',
         'images/char-pink-girl.png',
-        'images/char-princess-girl.png'
+        'images/char-princess-girl.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/Star.png'
     ]);
     Resources.onReady(init);
 

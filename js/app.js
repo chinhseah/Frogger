@@ -19,8 +19,8 @@ var Entity = function(sprite, xInitial, yInitial) {
     this.yInitial = yInitial;
     this.x = xInitial;
     this.y = yInitial;
-    this.xMax = 100; // move within max x position
-    this.yMax = 100; // move within max y position
+    this.xMax = 0; // move within max x position
+    this.yMax = 0; // move within max y position
 };
 
 /**
@@ -41,10 +41,10 @@ Entity.prototype.collision = function(other) {
 * @description Draw the entity on the screen, required method for game.
 */
 Entity.prototype.render = function() {
-    if (this.x > this.xMax) {
+    if (this.xMax > 0 && this.x > this.xMax) {
       this.x = 0;
     }
-    if (this.y > this.yMax){
+    if (this.yMax && this.y > this.yMax){
       this.y = 0;
     }
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
@@ -100,7 +100,6 @@ var Player = function(sprite, xInitial, yInitial){
     this.isMoveX = false;
     this.moveDelta = 0;
     // private attributes
-    var that = this; // used to make the object available to the private methods
     var lives = 3;
     // private methods
     /**
@@ -146,12 +145,24 @@ Player.prototype.update = function() {
     if (this.moveDelta != 0) {
       if (this.isMoveX){
         let xNew = this.x + this.moveDelta;
-        if (xNew >= 0 && xNew <= this.xMax - this.width)
-          this.x = xNew;
+        if (xNew >= 0) {
+            if (this.xMax > 0) {
+              if (xNew <= this.xMax - this.width)
+                this.x = xNew;
+            } else {
+              this.x = xNew;
+            }
+        }
       } else {
         let yNew = this.y + this.moveDelta;
-        if (yNew >= 0 && yNew <= this.yMax - this.height)
-          this.y = yNew;
+        if (yNew >= 0) {
+          if (this.yMax > 0){
+            if (yNew <= this.yMax - this.height)
+              this.y = yNew;
+          } else {
+            this.y = yNew;
+          }
+        }
       }
     }
     this.moveDelta = 0;
@@ -190,6 +201,38 @@ Player.prototype.win = function(){
 
 Player.prototype.constructor = Player;
 
+/**
+* @description Gemstone that player can collect to gain points
+* @constructor
+* @param {string} sprite - URL to gemstone image file
+* @param {number} xInitial - Initial x position of gemstone on canvas
+* @param {number} yInitial - Initial y position of gemstone on canvas
+* @param {number} points - number of points to increase player's score
+*/
+var Gemstone = function(sprite, xInitial, yInitial, points){
+    Entity.call(this, sprite, xInitial, yInitial);
+    this.points = points;
+}
+
+Gemstone.prototype = Object.create(Entity.prototype);
+
+Gemstone.prototype.constructor =  Gemstone;
+
+/**
+* @description Star that will replace gemstone after collection
+* @constructor
+* @param {string} sprite - URL to star image file
+* @param {number} xInitial - Initial x position of star on canvas
+* @param {number} yInitial - Initial y position of star on canvas
+*/
+var Star = function(sprite, xInitial, yInitial){
+    Entity.call(this, sprite, xInitial, yInitial);
+}
+
+Star.prototype = Object.create(Entity.prototype);
+
+Star.prototype.constructor =  Star;
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // 1st row is water 'blocks' so offset to 2nd, 3rd & 4th row of stone 'blocks'.
@@ -209,6 +252,15 @@ const avatars = {
   'Pink Girl':'images/char-pink-girl.png',
   'Princess':'images/char-princess-girl.png'
 };
+
+// Place gemstone objects in an array called allGemstones.
+// Position gemstones within 2nd, 3rd & 4th row of stone 'blocks'.
+var allGemstones = [new Gemstone('images/Gem Blue.png', Math.floor(Math.random() * 400), 60, 100),
+                    new Gemstone('images/Gem Green.png', Math.floor(Math.random() * 400), 143, 200),
+                    new Gemstone('images/Gem Orange.png', Math.floor(Math.random() * 400), 226, 300)];
+
+// Place star objects in an array called allStars.
+var allStars = [];
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
