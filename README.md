@@ -8,16 +8,16 @@ In this game, there is a Player and Enemies (bugs). The goal of the player is to
 
 :+1:Once Player reaches the water (i.e., the top of the game board) and all gemstones are collected, the game is won.
 
-![Choose Avatar](Frogger-Game.png)
+![Game Board](images/Frogger-Game.png)
 
 ### How to play?
 - User can pick an avatar to represent Player.
-![Choose Avatar](Frogger-Select-Player.png)
+![Choose Avatar](images/Frogger-Select-Player.png)
 - User can move Player left, right, up and down.
 - User avoids enemies (bugs) that move at varying speeds on the paved block portion of the game board.
 - Once Player collides with an enemy (bug), the game is reset and Player moves back to the starting square.
 
 :+1:The game ends if all Hearts are gone but gemstones have not all been collected.
-
+![Game End](images/Frogger-Game-End.png)
 ## Dependencies
 None
